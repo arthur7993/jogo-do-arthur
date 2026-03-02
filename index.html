@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mini Jogo do Arthur</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial;
+        }
+
+        #gameArea {
+            width: 400px;
+            height: 400px;
+            background-color: #eee;
+            margin: 20px auto;
+            position: relative;
+        }
+
+        #quadrado {
+            width: 50px;
+            height: 50px;
+            background-color: red;
+            position: absolute;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🎮 Clique no Quadrado!</h1>
+<p>Pontos: <span id="pontos">0</span></p>
+
+<div id="gameArea">
+    <div id="quadrado"></div>
+</div>
+
+<script>
+    let pontos = 0;
+    const quadrado = document.getElementById("quadrado");
+    const pontosTexto = document.getElementById("pontos");
+
+    function moverQuadrado() {
+        const maxX = 350;
+        const maxY = 350;
+
+        const randomX = Math.floor(Math.random() * maxX);
+        const randomY = Math.floor(Math.random() * maxY);
+
+        quadrado.style.left = randomX + "px";
+        quadrado.style.top = randomY + "px";
+    }
+
+    quadrado.addEventListener("click", function() {
+        pontos++;
+        pontosTexto.textContent = pontos;
+        moverQuadrado();
+    });
+
+    moverQuadrado();
+</script>
+
+</body>
+</html>
