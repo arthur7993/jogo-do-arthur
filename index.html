@@ -1,62 +1,130 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Mini Jogo do Arthur</title>
-    <style>
-        body {
-            text-align: center;
-            font-family: Arial;
-        }
-
-        #gameArea {
-            width: 400px;
-            height: 400px;
-            background-color: #eee;
-            margin: 20px auto;
-            position: relative;
-        }
-
-        #quadrado {
-            width: 50px;
-            height: 50px;
-            background-color: red;
-            position: absolute;
-            cursor: pointer;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Flappy Arthur</title>
+<style>
+body{
+    margin:0;
+    background:#70c5ce;
+    overflow:hidden;
+}
+canvas{
+    display:block;
+    margin:0 auto;
+    background:#70c5ce;
+}
+</style>
 </head>
 <body>
 
-<h1>🎮 Clique no Quadrado!</h1>
-<p>Pontos: <span id="pontos">0</span></p>
-
-<div id="gameArea">
-    <div id="quadrado"></div>
-</div>
+<canvas id="game" width="400" height="600"></canvas>
 
 <script>
-    let pontos = 0;
-    const quadrado = document.getElementById("quadrado");
-    const pontosTexto = document.getElementById("pontos");
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-    function moverQuadrado() {
-        const maxX = 350;
-        const maxY = 350;
+let bird = {
+    x: 80,
+    y: 200,
+    width: 30,
+    height: 30,
+    gravity: 0.5,
+    lift: -8,
+    velocity: 0
+};
 
-        const randomX = Math.floor(Math.random() * maxX);
-        const randomY = Math.floor(Math.random() * maxY);
+let pipes = [];
+let score = 0;
+let gameOver = false;
 
-        quadrado.style.left = randomX + "px";
-        quadrado.style.top = randomY + "px";
+function createPipe(){
+    let gap = 120;
+    let topHeight = Math.random() * 300 + 50;
+
+    pipes.push({
+        x: 400,
+        width: 50,
+        top: topHeight,
+        bottom: canvas.height - topHeight - gap
+    });
+}
+
+function drawBird(){
+    ctx.fillStyle = "yellow";
+    ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+}
+
+function updateBird(){
+    bird.velocity += bird.gravity;
+    bird.y += bird.velocity;
+
+    if(bird.y + bird.height > canvas.height){
+        gameOver = true;
     }
+}
 
-    quadrado.addEventListener("click", function() {
-        pontos++;
-        pontosTexto.textContent = pontos;
-        moverQuadrado();
+function drawPipes(){
+    ctx.fillStyle = "green";
+    pipes.forEach(pipe => {
+        ctx.fillRect(pipe.x, 0, pipe.width, pipe.top);
+        ctx.fillRect(pipe.x, canvas.height - pipe.bottom, pipe.width, pipe.bottom);
+    });
+}
+
+function updatePipes(){
+    pipes.forEach(pipe => {
+        pipe.x -= 2;
+
+        if(
+            bird.x < pipe.x + pipe.width &&
+            bird.x + bird.width > pipe.x &&
+            (bird.y < pipe.top || bird.y + bird.height > canvas.height - pipe.bottom)
+        ){
+            gameOver = true;
+        }
+
+        if(pipe.x + pipe.width < 0){
+            score++;
+        }
     });
 
-    moverQuadrado();
+    pipes = pipes.filter(pipe => pipe.x + pipe.width > 0);
+}
+
+function drawScore(){
+    ctx.fillStyle = "white";
+    ctx.font = "20px Arial";
+    ctx.fillText("Pontos: " + score, 10, 30);
+}
+
+function loop(){
+    if(gameOver){
+        ctx.fillStyle="white";
+        ctx.font="40px Arial";
+        ctx.fillText("Game Over",100,300);
+        return;
+    }
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    updateBird();
+    updatePipes();
+
+    drawBird();
+    drawPipes();
+    drawScore();
+
+    requestAnimationFrame(loop);
+}
+
+setInterval(createPipe,2000);
+
+document.addEventListener("keydown",()=>{
+    bird.velocity = bird.lift;
+});
+
+loop();
 </script>
 
 </body>
