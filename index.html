@@ -2,57 +2,79 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Flappy Arthur</title>
+<title>Flappy Arthur PRO</title>
 <style>
 body{
     margin:0;
     background:#70c5ce;
     overflow:hidden;
+    text-align:center;
 }
 canvas{
     display:block;
     margin:0 auto;
     background:#70c5ce;
 }
+button{
+    padding:10px 20px;
+    font-size:18px;
+    margin-top:10px;
+}
 </style>
 </head>
 <body>
 
-<canvas id="game" width="400" height="600"></canvas>
+<canvas id="game"></canvas>
+<br>
+<button onclick="restartGame()">Reiniciar</button>
 
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-let bird = {
-    x: 80,
-    y: 200,
-    width: 30,
-    height: 30,
-    gravity: 0.5,
-    lift: -8,
-    velocity: 0
-};
+// 📱 Responsivo
+canvas.width = window.innerWidth > 500 ? 400 : window.innerWidth - 20;
+canvas.height = 600;
 
-let pipes = [];
-let score = 0;
-let gameOver = false;
+let birdImg = new Image();
+birdImg.src = "https://i.imgur.com/QZ6XH4F.png"; // imagem simples
+
+let jumpSound = new Audio("https://www.soundjay.com/buttons/sounds/button-16.mp3");
+
+let highScore = localStorage.getItem("recorde") || 0;
+
+let bird, pipes, score, gameOver;
+
+function init(){
+    bird = {
+        x: 80,
+        y: 200,
+        width: 40,
+        height: 40,
+        gravity: 0.5,
+        lift: -8,
+        velocity: 0
+    };
+
+    pipes = [];
+    score = 0;
+    gameOver = false;
+}
 
 function createPipe(){
-    let gap = 120;
-    let topHeight = Math.random() * 300 + 50;
+    let gap = 150;
+    let topHeight = Math.random() * 250 + 50;
 
     pipes.push({
-        x: 400,
-        width: 50,
+        x: canvas.width,
+        width: 60,
         top: topHeight,
         bottom: canvas.height - topHeight - gap
     });
 }
 
 function drawBird(){
-    ctx.fillStyle = "yellow";
-    ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+    ctx.drawImage(birdImg, bird.x, bird.y, bird.width, bird.height);
 }
 
 function updateBird(){
@@ -60,7 +82,7 @@ function updateBird(){
     bird.y += bird.velocity;
 
     if(bird.y + bird.height > canvas.height){
-        gameOver = true;
+        endGame();
     }
 }
 
@@ -74,14 +96,14 @@ function drawPipes(){
 
 function updatePipes(){
     pipes.forEach(pipe => {
-        pipe.x -= 2;
+        pipe.x -= 3;
 
         if(
             bird.x < pipe.x + pipe.width &&
             bird.x + bird.width > pipe.x &&
             (bird.y < pipe.top || bird.y + bird.height > canvas.height - pipe.bottom)
         ){
-            gameOver = true;
+            endGame();
         }
 
         if(pipe.x + pipe.width < 0){
@@ -96,13 +118,22 @@ function drawScore(){
     ctx.fillStyle = "white";
     ctx.font = "20px Arial";
     ctx.fillText("Pontos: " + score, 10, 30);
+    ctx.fillText("Recorde: " + highScore, 10, 60);
+}
+
+function endGame(){
+    if(score > highScore){
+        highScore = score;
+        localStorage.setItem("recorde", highScore);
+    }
+    gameOver = true;
 }
 
 function loop(){
     if(gameOver){
         ctx.fillStyle="white";
         ctx.font="40px Arial";
-        ctx.fillText("Game Over",100,300);
+        ctx.fillText("Game Over", canvas.width/2 - 100, canvas.height/2);
         return;
     }
 
@@ -118,12 +149,24 @@ function loop(){
     requestAnimationFrame(loop);
 }
 
+function jump(){
+    if(!gameOver){
+        bird.velocity = bird.lift;
+        jumpSound.play();
+    }
+}
+
+function restartGame(){
+    init();
+    loop();
+}
+
+document.addEventListener("keydown", jump);
+document.addEventListener("click", jump);
+
 setInterval(createPipe,2000);
 
-document.addEventListener("keydown",()=>{
-    bird.velocity = bird.lift;
-});
-
+init();
 loop();
 </script>
 
