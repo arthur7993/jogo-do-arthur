@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flappy Arthur Básico</title>
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+}
+canvas {
+    display: block;
+    margin: auto;
+    background: #70c5ce;
+}
+</style>
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth > 500 ? 400 : window.innerWidth - 20;
+canvas.height = 600;
+
+let bird = { x: 80, y: 200, size: 20, velocity: 0 };
+let gravity = 0.6;
+let pipes = [];
+let score = 0;
+let gameRunning = false;
+let pipeGap = 150;
+let speed = 2;
+
+function drawBird() {
+    ctx.fillStyle = "yellow";
+    ctx.beginPath();
+    ctx.arc(bird.x, bird.y, bird.size, 0, Math.PI*2);
+    ctx.fill();
+}
+
+function createPipe() {
+    let top = Math.random() * 250 + 50;
+    pipes.push({ x: canvas.width, top: top });
+}
+
+function drawPipes() {
+    ctx.fillStyle = "
